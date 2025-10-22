@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>SprawdzJajo.pl</title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="list.css">
 </head>
 <body>
   <header class="header">
@@ -26,37 +27,33 @@
   </nav>
 
 
+  <h2 class="section-title">Lista figurek</h2>
   <div class="scanner-card">
-    <div class="video-wrapper">
-      <video id="video" autoplay playsinline></video>
-      <button id="startCamera">►</button>
-      <div class="zoom-controls" id="zoomControls">
-        <button id="zoomIn">+</button>
-        <button id="zoomOut">−</button>
-      </div>
-    </div>
-
-    <div class="codes">
-      <div class="code-block">
-        <input id="code1" class="code-input" placeholder="Kod 1" maxlength="4">
-        <button id="scanCode1" class="scan-btn">📸 Skanuj Kod 1</button>
-      </div>
-      <div class="code-block">
-        <input id="code2" class="code-input" placeholder="Kod 2" maxlength="4">
-        <button id="scanCode2" class="scan-btn">📸 Skanuj Kod 2</button>
-      </div>
-    </div>
-
-    <div class="button-row" id="buttonRow">
-      <button id="searchBtn">🔎 Szukaj</button>
-    </div>
-
-    <div id="result"></div>
+    <div id="figure-list"></div>
   </div>
-  <canvas id="canvas"></canvas>
+
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
   <script src="figures.js"></script>
   <script src="menu.js"></script>
-  <script src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const listDiv = document.getElementById('figure-list');
+
+      if (!figures || figures.length === 0) {
+        listDiv.innerHTML = "<p>Brak danych o figurkach.</p>";
+        return;
+      }
+
+      listDiv.innerHTML = figures.map(f => `
+        <div class="figure-card">
+          <img src="${f.img}" alt="${f.name}">
+          <div class="figure-info">
+            <h3>${f.name || ''}</h3>
+            <p><b>Kody:</b> ${f.codes.map(c => `<span>${c}</span>`).join(', ')}</p>
+          </div>
+        </div>
+      `).join('');
+    });
+  </script>
 </body>
 </html>

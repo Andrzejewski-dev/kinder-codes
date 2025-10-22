@@ -120,8 +120,17 @@ searchBtn.onclick = () => {
   }
   const found = figures.filter(f => f.codes.includes(fullCode) || f.codes.includes(fullCode2));
 
+  const scannedCodes = JSON.parse(localStorage.getItem('scannedCodes')) || [];
+  scannedCodes.push({
+    id: crypto.randomUUID(),
+    code: fullCode,
+    figureId: found[0]?.id,
+    approved: false
+  });
+  localStorage.setItem('scannedCodes', JSON.stringify(scannedCodes));
+
   if (found.length === 0) {
-    resultDiv.innerHTML = "<p>Nie znaleziono figurki 😢</p>";
+    resultDiv.innerHTML = `<p>Nie znaleziono figurki o kodzie <b>${fullCode}</b></p>`;
   } else {
     resultDiv.innerHTML = found.map(f => `
       <div>
