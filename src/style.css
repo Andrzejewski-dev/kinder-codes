@@ -201,3 +201,118 @@ canvas {
   box-shadow: 0 3px 10px rgba(0,0,0,0.15);
   margin-top: 10px;
 }
+
+/* ===== FULLSCREEN SLIDE MENU ===== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 420px;
+  background: var(--card-bg);
+  padding: 10px 20px;
+  border-radius: 15px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 20;
+}
+
+.hamburger {
+  font-size: 1.8em;
+  cursor: pointer;
+  color: var(--accent);
+  user-select: none;
+  transition: transform 0.3s;
+}
+
+.hamburger:active {
+  transform: scale(0.9);
+}
+
+/* Overlay behind the menu */
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 9;
+}
+
+/* Side menu container */
+.side-menu {
+  position: fixed;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--card-bg);
+  box-shadow: 2px 0 15px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* padding: 80px 20px; */
+  transition: left 0.3s ease;
+  z-index: 40;
+}
+
+.side-menu.show {
+  left: 0;
+}
+
+.menu-overlay.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.side-menu h2 {
+  margin-bottom: 40px;
+  color: var(--accent);
+  font-size: 1.6em;
+}
+
+.side-menu a {
+  display: block;
+  width: 100%;
+  text-align: center;
+  text-decoration: none;
+  padding: 14px 0;
+  font-size: 1.2em;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s, color 0.2s;
+}
+
+.side-menu a:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.close-menu {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 2em;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+/* ===== SECTION TITLE ===== */
+.section-title {
+  text-align: center;
+  color: var(--accent);
+  margin-bottom: 15px;
+  font-size: 1.4em;
+  font-weight: 600;
+  padding-bottom: 5px;
+}
+#logo {
+  cursor: pointer;
+}

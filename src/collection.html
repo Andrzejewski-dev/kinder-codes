@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>SprawdzJajo.pl – Moja kolekcja</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="collection.css">
+</head>
+<body>
+  <header class="header">
+    <h1 id="logo">SprawdzJajo.pl</h1>
+    <div class="hamburger" id="hamburger">☰</div>
+  </header>
+
+  <!-- Full-screen slide menu -->
+  <div class="menu-overlay" id="menuOverlay"></div>
+  <nav class="side-menu" id="sideMenu">
+    <button class="close-menu" id="closeMenu">×</button>
+    <h2>Menu</h2>
+    <a href="index.html" id="menuScan">Szukaj</a>
+    <a href="list.html" id="menuList">Lista figurek</a>
+    <a href="collection.html" id="menuCollection">Moja kolekcja</a>
+    <a href="scans.html" id="menuScans">Moje skany</a>
+  </nav>
+
+  <div class="section-header">
+    <h2 class="section-title">Moja kolekcja</h2>
+  </div>
+
+  <div class="scanner-card">
+    <div id="collection-list"></div>
+    <button id="addToCollectionBtn" class="add-btn">+ Dodaj</button>
+  </div>
+
+  <!-- Modal for adding new figure -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h3>Wybierz figurkę do dodania</h3>
+      <div id="figure-select-list" class="figure-select-list"></div>
+      <button id="closeModal" class="close-modal">Zamknij</button>
+    </div>
+  </div>
+  <!-- Confirmation modal -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-modal">
+    <div id="confirm-image"></div>
+    <p>Czy na pewno chcesz usunąć tę figurkę z kolekcji?</p>
+    <div class="confirm-buttons">
+      <button id="confirmYes" class="confirm-yes">Usuń</button>
+      <button id="confirmNo" class="confirm-no">Anuluj</button>
+    </div>
+  </div>
+</div>
+
+
+  <script src="figures.js"></script>
+  <script src="menu.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const collectionDiv = document.getElementById('collection-list');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const figureSelectList = document.getElementById('figure-select-list');
+    const closeModal = document.getElementById('closeModal');
+    const addBtn = document.getElementById('addToCollectionBtn');
+    
+    const confirmOverlay = document.getElementById('confirmOverlay');
+    const confirmYes = document.getElementById('confirmYes');
+    const confirmNo = document.getElementById('confirmNo');
+    const confirmImg = document.getElementById('confirm-image');
+
+    let itemToDelete = null;
+
+    function getCollection() {
+      return JSON.parse(localStorage.getItem('scannedCodes')) || [];
+    }
+
+    function saveCollection(data) {
+      localStorage.setItem('scannedCodes', JSON.stringify(data));
+    }
+
+    function renderCollection() {
+      const scannedCodes = getCollection();
+      const approved = scannedCodes.filter(item => item.approved);
+
+      if (approved.length === 0) {
+        collectionDiv.innerHTML = "<p>Brak zatwierdzonych figurek w kolekcji.</p>";
+        return;
+      }
+
+      collectionDiv.innerHTML = approved.map(item => {
+        const figure = figures.find(f => f.id === item.figureId);
+        if (!figure) return "";
+
+        return `
+          <div class="figure-card" data-id="${item.id}" data-figure-id="${figure.id}">
+            <div class="figure-img-container">
+              <img src="${figure.img}" alt="${figure.name}">
+              <button class="remove-btn" title="Usuń">×</button>
+            </div>
+            <div class="figure-info">
+              <h3>${figure.name}</h3>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // attach remove button handlers
+      document.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const card = e.target.closest('.figure-card');
+          const figureId = parseInt(card.dataset.figureId);
+          const figure = figures.find(f => f.id === figureId);
+          itemToDelete = card.dataset.id;
+
+          // pokaż obrazek w modalu potwierdzenia
+          if (figure) {
+            confirmImg.innerHTML = `<img src="${figure.img}" alt="${figure.name}" style="max-width:120px; border-radius:10px; margin-bottom:10px;">`;
+          } else {
+            confirmImg.innerHTML = '';
+          }
+
+          confirmOverlay.classList.add('visible');
+        });
+      });
+    }
+
+    // Confirm delete
+    confirmYes.addEventListener('click', () => {
+      if (!itemToDelete) return;
+      let scannedCodes = getCollection();
+      scannedCodes = scannedCodes.filter(i => i.id !== itemToDelete);
+      saveCollection(scannedCodes);
+      itemToDelete = null;
+      confirmOverlay.classList.remove('visible');
+      confirmImg.innerHTML = '';
+      renderCollection();
+    });
+
+    confirmNo.addEventListener('click', () => {
+      itemToDelete = null;
+      confirmOverlay.classList.remove('visible');
+      confirmImg.innerHTML = '';
+    });
+
+    // Show modal to add new figure
+    addBtn.addEventListener('click', () => {
+      modalOverlay.classList.add('visible');
+      figureSelectList.innerHTML = figures.map(f => `
+        <div class="figure-option" data-id="${f.id}">
+          <img src="${f.img}" alt="${f.name}">
+          <span>${f.name}</span>
+        </div>
+      `).join('');
+
+      document.querySelectorAll('.figure-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          const id = parseInt(opt.dataset.id);
+          const figure = figures.find(f => f.id === id);
+          if (!figure) return;
+
+          const scannedCodes = getCollection();
+          scannedCodes.push({
+            id: crypto.randomUUID(),
+            code: figure.codes[0],
+            figureId: figure.id,
+            approved: true,
+            manual: true
+          });
+          saveCollection(scannedCodes);
+          renderCollection();
+          modalOverlay.classList.remove('visible');
+        });
+      });
+    });
+
+    closeModal.addEventListener('click', () => {
+      modalOverlay.classList.remove('visible');
+    });
+
+    renderCollection();
+  });
+</script>
+
+
+</body>
+</html>
