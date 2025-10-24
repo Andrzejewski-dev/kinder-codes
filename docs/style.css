@@ -190,18 +190,6 @@ canvas {
   background: #ff594a;
 }
 
-#result {
-  text-align: center;
-  margin-top: 20px;
-}
-
-#result img {
-  width: 150px;
-  border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-  margin-top: 10px;
-}
-
 /* ===== FULLSCREEN SLIDE MENU ===== */
 .header {
   display: flex;
@@ -209,10 +197,10 @@ canvas {
   align-items: center;
   width: 100%;
   max-width: 420px;
-  background: var(--card-bg);
+  /* background: var(--card-bg); */
   padding: 10px 20px;
-  border-radius: 15px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  /* border-radius: 15px; */
+  /* box-shadow: 0 3px 8px rgba(0,0,0,0.1); */
   margin-bottom: 20px;
   position: relative;
   z-index: 20;
@@ -224,6 +212,10 @@ canvas {
   color: var(--accent);
   user-select: none;
   transition: transform 0.3s;
+  background: var(--card-bg);
+  border-radius: 15px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  padding: 3px 8px;
 }
 
 .hamburger:active {
@@ -315,4 +307,60 @@ canvas {
 }
 #logo {
   cursor: pointer;
+  width: 100px;
+}
+
+#result {
+  text-align: center;
+  margin-top: 20px;
+}
+
+#result div {
+  position: relative; /* konieczne, by badge mogło się pozycjonować względem tego elementu */
+  display: inline-block;
+}
+
+#result img {
+  width: 150px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+  margin-top: 10px;
+  display: block;
+}
+
+.badge {
+  position: absolute;
+  top: 44px;
+  right: -4px;
+  background-color: #ff5555;
+  color: white;
+  padding: 5px 16px;
+  font-size: 10px;
+  font-weight: bold;
+  transform: rotate(45deg);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  pointer-events: none; /* żeby nie blokowała kliknięć na obrazku */
+}
+
+/* Ścięte rogi */
+.badge::before,
+.badge::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 25px;
+  height: 100%;
+  background: inherit;
+}
+
+.badge::before {
+  left: -11px;
+  transform: skewX(-45deg);
+  transform-origin: left;
+}
+
+.badge::after {
+  right: -11px;
+  transform: skewX(45deg);
+  transform-origin: right;
 }

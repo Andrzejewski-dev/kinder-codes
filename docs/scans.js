@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let scannedCodes = JSON.parse(localStorage.getItem('scannedCodes')) || [];
 
   function renderList() {
-    if (scannedCodes.length === 0) {
+    if (scannedCodes.filter(sc => !sc.manual).length === 0) {
       scannedListDiv.innerHTML = '<p class="empty">Brak zeskanowanych kodów.</p>';
       return;
     }

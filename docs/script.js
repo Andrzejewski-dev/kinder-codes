@@ -15,7 +15,7 @@ const searchBtn = document.getElementById('searchBtn');
 const resultDiv = document.getElementById('result');
 
 let stream;
-let zoomLevel = 1;
+let zoomLevel = 2;
 const zoomStep = 1;
 const minZoom = 1;
 const maxZoom = 10;
@@ -32,7 +32,7 @@ async function startCamera() {
   code2Input.classList.add('active');
 }
 
-function drawZoomedCanvas() {
+function drawZoomedCanvas(rotate = false) {
   const ctx = canvas.getContext('2d');
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
@@ -42,28 +42,37 @@ function drawZoomedCanvas() {
   const w = video.videoWidth / zoomLevel;
   const h = video.videoHeight / zoomLevel;
 
+  ctx.save();
   ctx.translate(centerX, centerY);
   ctx.scale(zoomLevel, zoomLevel);
   ctx.translate(-centerX, -centerY);
   ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+  ctx.restore();
 
-  // --- Przycinanie do 128px ---
   const tempCanvas = document.createElement('canvas');
   const tempCtx = tempCanvas.getContext('2d');
   tempCanvas.width = canvas.width;
   tempCanvas.height = 200;
 
-  // kopiujemy tylko górną część oryginalnego canvas
   tempCtx.drawImage(canvas, 0, 0, canvas.width, 200, 0, 0, canvas.width, 200);
 
-  // kopiujemy z powrotem do oryginalnego canvas, jeśli chcesz
   canvas.height = 200;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(tempCanvas, 0, 0);
+
+  if (rotate) {
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate(Math.PI);
+    ctx.drawImage(tempCanvas, -canvas.width / 2, -canvas.height / 2);
+    ctx.restore();
+  } else {
+    ctx.drawImage(tempCanvas, 0, 0);
+  }
 }
 
-async function scanCode(inputField) {
-  drawZoomedCanvas();
+
+async function scanCode(inputField, rotate = false) {
+  drawZoomedCanvas(rotate);
   const { data: { text } } = await Tesseract.recognize(canvas, 'eng', {
     tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
   });
@@ -72,7 +81,10 @@ async function scanCode(inputField) {
   console.log(codes)
   if (codes && codes.length > 0) {
     const code = codes.find(c => c.length === 3 || c.length === 4) || codes[0];
-    inputField.value = code.substring(0, 4);
+    const foundCode = code.substring(0, 4).replace(/I/g, '1');
+    inputField.value = foundCode;
+  } else if (!rotate) {
+    scanCode(inputField, true)
   }
 }
 
@@ -121,22 +133,30 @@ searchBtn.onclick = () => {
   const found = figures.filter(f => f.codes.includes(fullCode) || f.codes.includes(fullCode2));
 
   const scannedCodes = JSON.parse(localStorage.getItem('scannedCodes')) || [];
-  scannedCodes.push({
-    id: crypto.randomUUID(),
-    code: fullCode,
-    figureId: found[0]?.id,
-    approved: false
-  });
-  localStorage.setItem('scannedCodes', JSON.stringify(scannedCodes));
+  if (!scannedCodes.find(sc => sc.code === fullCode)) {
+    scannedCodes.push({
+      id: crypto.randomUUID(),
+      code: fullCode,
+      figureId: found[0]?.id,
+      approved: false
+    });
+    localStorage.setItem('scannedCodes', JSON.stringify(scannedCodes));
+  }
 
   if (found.length === 0) {
     resultDiv.innerHTML = `<p>Nie znaleziono figurki o kodzie <b>${fullCode}</b></p>`;
   } else {
-    resultDiv.innerHTML = found.map(f => `
-      <div>
-        <h3>${f.name}</h3>
-        <img src="${f.img}" alt="${f.name}">
-      </div>
-    `).join("");
+    resultDiv.innerHTML = found.map(f => {
+    console.log(scannedCodes)
+    const isDuplicate = scannedCodes.some(s => s.figureId === f.id && s.approved);
+    console.log(isDuplicate)
+      return `
+        <div>
+          <h3>${f.name}</h3>
+          <img src="${f.img}" alt="${f.name}">
+          ${isDuplicate ? '<span class="badge">Powtórka</span>' : ''}
+        </div>
+      `;
+    }).join("");
   }
 };

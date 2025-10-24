@@ -40,3 +40,11 @@
 .figure-info p span {
   white-space: nowrap;        /* keep entire line together */
 }
+
+.figure-card {
+  position: relative;
+}
+
+.figure-card .badge {
+  top: 25px
+}
